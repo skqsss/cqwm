@@ -10,4 +10,25 @@
         values (#{name}, #{categoryId}, #{price}, #{image}, #{description}, #{status}, #{createTime}, #{updateTime},
                 #{createUser}, #{updateUser})
     </insert>
+
+    <select id="pageQuery" resultType="com.sky.vo.DishVO">
+        select d.*,c.name as categoryName from dish d left outer join category c on d.category_id = c.id
+        <where>
+            <!-- 判断 name 不为 null 且不为空字符串 -->
+            <if test="name != null and name != ''">
+                AND d.name LIKE CONCAT('%', #{name}, '%')
+            </if>
+
+            <!-- 判断 categoryId 不为 null -->
+            <if test="categoryId != null">
+                AND d.category_id = #{categoryId}
+            </if>
+
+            <!-- 判断 status 不为 null -->
+            <if test="status != null">
+                AND d.status = #{status}
+            </if>
+        </where>
+        order by d.create_time desc
+    </select>
 </mapper>
