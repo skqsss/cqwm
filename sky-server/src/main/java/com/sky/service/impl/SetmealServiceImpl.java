@@ -2,6 +2,7 @@ package com.sky.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.sky.constant.StatusConstant;
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
 import com.sky.entity.Setmeal;
@@ -70,5 +71,30 @@ public class SetmealServiceImpl implements SetmealService {
         PageHelper.startPage(setmealPageQueryDTO.getPage(), setmealPageQueryDTO.getPageSize());
         Page<SetmealVO> page = setmealMapper.pageQuery(setmealPageQueryDTO);
         return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    /**
+     * 批量删除套餐
+     *
+     * @param ids
+     */
+    @Override
+    public void deleteBatch(List<Long> ids) {
+        // 判断当前套餐是否在售
+        ids.forEach(id -> {
+            Setmeal setmeal = setmealMapper.getById(id);
+            Integer status = setmeal.getStatus();
+            if (status == StatusConstant.ENABLE) {
+                //起售中的套餐不能删除
+                throw new RuntimeException("起售中的套餐不能删除");
+            }
+        });
+
+        ids.forEach(setmealId -> {
+            //删除套餐表中的数据
+            setmealMapper.deleteById(setmealId);
+            //删除套餐菜品关系表中的数据
+            setmealDishMapper.deleteBySetmealId(setmealId);
+        });
     }
 }
